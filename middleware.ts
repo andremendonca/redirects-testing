@@ -1,23 +1,39 @@
-import { NextResponse } from 'next/server'
-import type { NextRequest } from 'next/server'
+import { NextResponse } from "next/server";
+import type { NextRequest } from "next/server";
+
+const REDIRECT_HOST = process.env.REDIRECT_HOST?.toLowerCase();
 
 export function middleware(request: NextRequest) {
-  console.log('--- Request Headers ---')
-  request.headers.forEach((value, key) => {
-    console.log(`${key}: ${value}`)
-  })
-  console.log('--- End Headers ---')
-
-  const hostname = request.headers.get('host')
-  const forwardedHost = request.headers.get('x-forwarded-host')
-
-  if (hostname === 'www.codesteam.co' || forwardedHost === 'www.codesteam.co') {
-    return NextResponse.redirect('https://www.andremedonca.co/crowdplay', 301)
+  if (!REDIRECT_HOST) {
+    return NextResponse.next();
   }
 
-  return NextResponse.next()
+  const hostname = request.headers.get("host");
+  const forwardedHost = request.headers.get("x-forwarded-host");
+
+  const host = hostname?.toLowerCase();
+  const forwarded = forwardedHost?.toLowerCase();
+
+  const hostWithoutWww = REDIRECT_HOST.replace(/^www\./, "");
+  const hostWithWww = REDIRECT_HOST.startsWith("www.")
+    ? REDIRECT_HOST
+    : `www.${REDIRECT_HOST}`;
+
+  if (
+    host === hostWithWww ||
+    host === hostWithoutWww ||
+    forwarded === hostWithWww ||
+    forwarded === hostWithoutWww
+  ) {
+    return NextResponse.redirect(
+      "https://www.affinaloyalty.com/crowdplay",
+      301,
+    );
+  }
+
+  return NextResponse.next();
 }
 
 export const config = {
-  matcher: '/:path*',
-}
+  matcher: "/:path*",
+};
